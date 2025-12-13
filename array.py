@@ -1,3 +1,6 @@
+import os
+import sys
+
 def parse_scores_from_string(s):
     parts = [p.strip() for p in s.replace(",", " ").split()]
     scores = []
@@ -13,16 +16,30 @@ def parse_scores_from_string(s):
     return scores
 
 def read_scores():
-    # Always prompt user interactively
-    raw = input("Enter scores separated by spaces or commas: ")
-    return parse_scores_from_string(raw)
+    # 1️⃣ Use CLI arguments if provided
+    if len(sys.argv) > 1:
+        return parse_scores_from_string(" ".join(sys.argv[1:]))
+
+    # 2️⃣ Use environment variable SCORES
+    env = os.getenv("SCORES")
+    if env:
+        return parse_scores_from_string(env)
+
+    # 3️⃣ Only prompt if interactive terminal
+    if sys.stdin.isatty():
+        raw = input("Enter scores separated by spaces or commas: ")
+        return parse_scores_from_string(raw)
+
+    # 4️⃣ No input available
+    print("No scores provided via arguments, SCORES env, or interactive input.")
+    return []
 
 def main():
     scores = read_scores()
 
     if not scores:
         print("No valid scores provided.")
-        return
+        sys.exit(1)
 
     total = sum(scores)
     avg = total / len(scores)
